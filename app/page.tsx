@@ -19,32 +19,269 @@ type Workout = {
   instructions: string[];
 };
 
+const workoutData: Workout[] = [
+  {
+    id: 1,
+    name: "Barbell Bench Press",
+    image:
+      "https://img.magnific.com/free-photo/portrait-anime-character-doing-fitness-exercising_23-2151666664.jpg?w=740",
+    muscleGroups: ["Chest", "Arms"],
+    equipment: "Barbell, Bench",
+    difficulty: "Intermediate",
+    duration: 25,
+    caloriesBurned: 180,
+    sets: 4,
+    reps: "6-8",
+    rating: 4.8,
+    description: "A classic upper-body pressing exercise targeting the chest and arms.",
+    instructions: [
+      "Lie flat on the bench and grip the bar slightly wider than shoulder width.",
+      "Lower the bar toward your chest with control.",
+      "Press the bar upward until your arms are extended.",
+      "Repeat for the required reps.",
+    ],
+  },
+  {
+    id: 2,
+    name: "Pull-Up",
+    image:
+      "https://img.magnific.com/free-photo/3d-cartoon-fitness-man_23-2151691400.jpg?w=740",
+    muscleGroups: ["Back", "Arms"],
+    equipment: "Pull-up Bar",
+    difficulty: "Intermediate",
+    duration: 15,
+    caloriesBurned: 120,
+    sets: 4,
+    reps: "6-10",
+    rating: 4.7,
+    description: "A bodyweight pulling exercise that targets the back and arms.",
+    instructions: [
+      "Grip the pull-up bar with your hands slightly wider than your shoulders.",
+      "Pull your body upward toward the bar.",
+      "Keep your body controlled throughout the movement.",
+      "Lower yourself slowly and repeat.",
+    ],
+  },
+  {
+    id: 3,
+    name: "Back Squat",
+    image:
+      "https://img.magnific.com/free-photo/3d-cartoon-fitness-man_23-2151691401.jpg?w=740",
+    muscleGroups: ["Legs", "Core"],
+    equipment: "Barbell, Rack",
+    difficulty: "Advanced",
+    duration: 30,
+    caloriesBurned: 240,
+    sets: 5,
+    reps: "5-8",
+    rating: 4.9,
+    description: "A compound lower-body exercise focusing on the legs and core.",
+    instructions: [
+      "Position the barbell securely across your upper back.",
+      "Stand with your feet around shoulder width apart.",
+      "Lower your body by bending your knees and hips.",
+      "Drive through your feet to return to the starting position.",
+    ],
+  },
+  {
+    id: 4,
+    name: "Overhead Press",
+    image:
+      "https://img.magnific.com/free-photo/portrait-anime-character-doing-fitness-exercising_23-2151666703.jpg?w=740",
+    muscleGroups: ["Shoulders", "Arms"],
+    equipment: "Barbell",
+    difficulty: "Intermediate",
+    duration: 20,
+    caloriesBurned: 150,
+    sets: 4,
+    reps: "6-8",
+    rating: 4.6,
+    description: "A pressing movement that develops the shoulders and arms.",
+    instructions: [
+      "Hold the barbell at shoulder level.",
+      "Brace your core and keep your body stable.",
+      "Press the barbell overhead.",
+      "Lower it back to shoulder level with control.",
+    ],
+  },
+  {
+    id: 5,
+    name: "Dumbbell Bicep Curl",
+    image:
+      "https://img.magnific.com/free-photo/portrait-anime-character-doing-fitness-exercising_23-2151666702.jpg?w=740",
+    muscleGroups: ["Arms"],
+    equipment: "Dumbbells",
+    difficulty: "Beginner",
+    duration: 12,
+    caloriesBurned: 80,
+    sets: 3,
+    reps: "10-12",
+    rating: 4.3,
+    description: "A simple isolation exercise for the biceps.",
+    instructions: [
+      "Hold a dumbbell in each hand.",
+      "Keep your elbows close to your body.",
+      "Curl the dumbbells upward.",
+      "Lower them slowly to the starting position.",
+    ],
+  },
+  {
+    id: 6,
+    name: "Hollow-Body Plank",
+    image:
+      "https://img.magnific.com/free-photo/3d-cartoon-fitness-man_23-2151691489.jpg?w=740",
+    muscleGroups: ["Core"],
+    equipment: "Bodyweight",
+    difficulty: "Beginner",
+    duration: 10,
+    caloriesBurned: 60,
+    sets: 3,
+    reps: "30-45s",
+    rating: 4.4,
+    description: "A core-focused bodyweight exercise.",
+    instructions: [
+      "Lie on your back and engage your core.",
+      "Lift your shoulders and legs slightly from the floor.",
+      "Keep your lower back controlled.",
+      "Hold the position for the required time.",
+    ],
+  },
+  {
+    id: 7,
+    name: "Burpee",
+    image:
+      "https://img.magnific.com/free-photo/3d-cartoon-business-character_1048-16544.jpg?w=740",
+    muscleGroups: ["Full Body"],
+    equipment: "Bodyweight",
+    difficulty: "Intermediate",
+    duration: 12,
+    caloriesBurned: 160,
+    sets: 4,
+    reps: "8-12",
+    rating: 4.2,
+    description: "A full-body conditioning exercise combining strength and cardio.",
+    instructions: [
+      "Start standing with your feet shoulder width apart.",
+      "Squat down and place your hands on the floor.",
+      "Move your feet back into a plank position.",
+      "Return to standing and repeat.",
+    ],
+  },
+  {
+    id: 8,
+    name: "Conventional Deadlift",
+    image:
+      "https://img.magnific.com/free-photo/portrait-anime-character-doing-fitness-exercising_23-2151666704.jpg?w=740",
+    muscleGroups: ["Back", "Legs"],
+    equipment: "Barbell",
+    difficulty: "Advanced",
+    duration: 28,
+    caloriesBurned: 260,
+    sets: 4,
+    reps: "3-5",
+    rating: 4.9,
+    description: "A compound lift targeting the posterior chain.",
+    instructions: [
+      "Stand with the barbell over your mid-foot.",
+      "Bend your hips and knees while keeping your back controlled.",
+      "Lift the bar by driving through your feet.",
+      "Lower the bar with control.",
+    ],
+  },
+  {
+    id: 9,
+    name: "Push-Up",
+    image:
+      "https://img.magnific.com/free-photo/3d-cartoon-fitness-man_23-2151691429.jpg?w=740",
+    muscleGroups: ["Chest", "Arms", "Core"],
+    equipment: "Bodyweight",
+    difficulty: "Beginner",
+    duration: 10,
+    caloriesBurned: 90,
+    sets: 3,
+    reps: "12-15",
+    rating: 4.5,
+    description: "A classic bodyweight exercise for the chest, arms, and core.",
+    instructions: [
+      "Start in a high plank position.",
+      "Keep your body straight.",
+      "Lower your chest toward the floor.",
+      "Push yourself back up.",
+    ],
+  },
+  {
+    id: 10,
+    name: "Walking Lunge",
+    image:
+      "https://img.magnific.com/free-photo/portrait-anime-character-doing-fitness-exercising_23-2151666701.jpg?w=740",
+    muscleGroups: ["Legs"],
+    equipment: "Dumbbells (optional)",
+    difficulty: "Beginner",
+    duration: 18,
+    caloriesBurned: 170,
+    sets: 3,
+    reps: "10-12/leg",
+    rating: 4.4,
+    description: "A lower-body movement that works the legs and improves balance.",
+    instructions: [
+      "Stand tall with your feet together.",
+      "Step forward with one leg.",
+      "Lower your body into a lunge.",
+      "Push through the front foot and step forward with the other leg.",
+    ],
+  },
+  {
+    id: 11,
+    name: "Russian Twist",
+    image:
+      "https://img.magnific.com/free-photo/3d-cartoon-fitness-man_23-2151691487.jpg?w=740",
+    muscleGroups: ["Core"],
+    equipment: "Medicine Ball",
+    difficulty: "Beginner",
+    duration: 8,
+    caloriesBurned: 70,
+    sets: 3,
+    reps: "16-20",
+    rating: 4.1,
+    description: "A rotational core exercise.",
+    instructions: [
+      "Sit with your knees bent and feet supported.",
+      "Lean your upper body back slightly.",
+      "Hold the medicine ball in front of you.",
+      "Rotate your torso from side to side.",
+    ],
+  },
+  {
+    id: 12,
+    name: "Kettlebell Swing",
+    image:
+      "https://img.magnific.com/free-photo/3d-cartoon-fitness-man_23-2151691505.jpg?w=740",
+    muscleGroups: ["Full Body", "Shoulders"],
+    equipment: "Kettlebell",
+    difficulty: "Intermediate",
+    duration: 16,
+    caloriesBurned: 200,
+    sets: 5,
+    reps: "12-15",
+    rating: 4.7,
+    description: "A dynamic full-body exercise using a kettlebell.",
+    instructions: [
+      "Stand with the kettlebell between your feet.",
+      "Hinge at your hips and grip the kettlebell.",
+      "Drive your hips forward to swing the kettlebell.",
+      "Control the kettlebell as it returns between your legs.",
+    ],
+  },
+];
+
 export default function Home() {
   const [workouts, setWorkouts] = useState<Workout[]>([]);
   const [loading, setLoading] = useState(true);
   const [sortBy, setSortBy] = useState("duration");
 
   useEffect(() => {
-    const fetchWorkouts = async () => {
-      try {
-        const response = await fetch(
-          "https://api.abcz.workers.dev/api/fitlog"
-        );
-
-        if (!response.ok) {
-          throw new Error("Failed to fetch workouts");
-        }
-
-        const data = await response.json();
-        setWorkouts(data);
-      } catch (error) {
-        console.error("Workout data loading error:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchWorkouts();
+    setWorkouts(workoutData);
+    setLoading(false);
   }, []);
 
   const sortedWorkouts = [...workouts].sort((a, b) => {
@@ -212,6 +449,7 @@ export default function Home() {
                     alt={workout.name}
                     fill
                     className="object-cover transition duration-500 group-hover:scale-105"
+                    unoptimized
                   />
                 </div>
 
