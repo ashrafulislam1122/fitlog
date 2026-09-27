@@ -2,9 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
-import { ToastContainer, toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
+import { useEffect, useState } from "react";
 
 type Workout = {
   id: number;
@@ -22,140 +20,149 @@ type Workout = {
   instructions: string[];
 };
 
-const API_URL = "https://api.api-store.workers.dev/api/fitlog";
-
 export default function Home() {
   const [workouts, setWorkouts] = useState<Workout[]>([]);
+  const [filteredWorkouts, setFilteredWorkouts] = useState<Workout[]>([]);
   const [loading, setLoading] = useState(true);
   const [sortBy, setSortBy] = useState("duration");
-  const [plan, setPlan] = useState<number[]>([]);
-  const [saved, setSaved] = useState<number[]>([]);
+  const [planCount, setPlanCount] = useState(0);
+  const [savedCount, setSavedCount] = useState(0);
 
   useEffect(() => {
     async function loadWorkouts() {
       try {
-        const res = await fetch(API_URL);
+        const response = await fetch(
+          "https://api.api-store.workers.dev/api/fitlog"
+        );
 
-        if (!res.ok) {
+        if (!response.ok) {
           throw new Error("Failed to fetch workouts");
         }
 
-        const data = await res.json();
+        const data = await response.json();
+
         setWorkouts(data);
+        setFilteredWorkouts(data);
       } catch (error) {
-        console.error("Failed to fetch workouts:", error);
-        toast.error("Failed to load workouts");
+        console.error("Workout loading error:", error);
       } finally {
         setLoading(false);
       }
     }
 
     loadWorkouts();
-
-    const savedPlan = localStorage.getItem("fitlog-plan");
-    const savedList = localStorage.getItem("fitlog-saved");
-
-    if (savedPlan) {
-      setPlan(JSON.parse(savedPlan));
-    }
-
-    if (savedList) {
-      setSaved(JSON.parse(savedList));
-    }
   }, []);
 
-  const sortedWorkouts = useMemo(() => {
-    const list = [...workouts];
+  useEffect(() => {
+    const plan = JSON.parse(
+      localStorage.getItem("fitlog-plan") || "[]"
+    );
+
+    const saved = JSON.parse(
+      localStorage.getItem("fitlog-saved") || "[]"
+    );
+
+    setPlanCount(plan.length);
+    setSavedCount(saved.length);
+
+    function updateCounts() {
+      const updatedPlan = JSON.parse(
+        localStorage.getItem("fitlog-plan") || "[]"
+      );
+
+      const updatedSaved = JSON.parse(
+        localStorage.getItem("fitlog-saved") || "[]"
+      );
+
+      setPlanCount(updatedPlan.length);
+      setSavedCount(updatedSaved.length);
+    }
+
+    window.addEventListener("storage", updateCounts);
+
+    return () => {
+      window.removeEventListener("storage", updateCounts);
+    };
+  }, []);
+
+  useEffect(() => {
+    const sorted = [...workouts];
 
     if (sortBy === "duration") {
-      list.sort((a, b) => a.duration - b.duration);
+      sorted.sort((a, b) => a.duration - b.duration);
     }
 
     if (sortBy === "calories") {
-      list.sort((a, b) => b.caloriesBurned - a.caloriesBurned);
+      sorted.sort(
+        (a, b) => b.caloriesBurned - a.caloriesBurned
+      );
     }
 
     if (sortBy === "rating") {
-      list.sort((a, b) => b.rating - a.rating);
+      sorted.sort((a, b) => b.rating - a.rating);
     }
 
-    return list;
-  }, [workouts, sortBy]);
-
-  const addToPlan = (id: number) => {
-    if (plan.includes(id)) {
-      toast.warning("Already in your plan!");
-      return;
-    }
-
-    if (plan.length >= 5) {
-      toast.warning("Maximum 5 workouts allowed!");
-      return;
-    }
-
-    const newPlan = [...plan, id];
-
-    setPlan(newPlan);
-    localStorage.setItem("fitlog-plan", JSON.stringify(newPlan));
-
-    toast.success("Added to today's plan!");
-  };
-
-  const saveWorkout = (id: number) => {
-    if (saved.includes(id)) {
-      toast.warning("Already saved!");
-      return;
-    }
-
-    const newSaved = [...saved, id];
-
-    setSaved(newSaved);
-    localStorage.setItem("fitlog-saved", JSON.stringify(newSaved));
-
-    toast.success("Saved for later!");
-  };
+    setFilteredWorkouts(sorted);
+  }, [sortBy, workouts]);
 
   return (
-    <main className="min-h-screen bg-white text-black">
+    <main className="min-h-screen bg-black text-white">
 
       {/* NAVBAR */}
-      <nav className="border-b border-gray-200 bg-white">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-5">
+      <nav className="sticky top-0 z-50 border-b border-zinc-800 bg-black/95 backdrop-blur">
+        <div className="mx-auto flex max-w-7xl items-center justify-between px-5 py-4 md:px-10">
 
-          <Link href="/" className="text-2xl font-black">
-            FITLOG
+          {/* LOGO */}
+          <Link
+            href="/"
+            className="flex items-center gap-2"
+          >
+            <Image
+              src="/logho.png"
+              alt="FitLog"
+              width={42}
+              height={42}
+            />
+
+            <span className="text-2xl font-black tracking-tight">
+              FIT<span className="text-[#ccff00]">LOG</span>
+            </span>
           </Link>
 
+          {/* NAV LINKS */}
           <div className="hidden items-center gap-8 md:flex">
+
             <Link
               href="/"
-              className="font-semibold text-lime-600"
+              className="rounded-full bg-[#ccff00] px-5 py-2 text-sm font-black text-black"
             >
-              Workout
+              WORKOUT
             </Link>
 
             <Link
               href="/my-plan"
-              className="font-semibold hover:text-lime-600"
+              className="text-sm font-bold text-zinc-400 transition hover:text-white"
             >
-              My Plan
+              MY PLAN
             </Link>
+
           </div>
 
-          <div className="flex items-center gap-3">
+          {/* BADGES */}
+          <div className="flex items-center gap-2">
 
             <Link
               href="/my-plan"
-              className="rounded-lg bg-lime-400 px-4 py-2 text-sm font-bold"
+              className="rounded-full bg-[#ccff00] px-4 py-2 text-xs font-black text-black"
             >
-              Plan {plan.length}
+              PLAN {planCount}
             </Link>
 
             <Link
               href="/my-plan"
-              className="hidden rounded-lg border border-black px-4 py-2 text-sm font-bold sm:block"
+              className="hidden rounded-full border border-zinc-600 px-4 py-2 text-xs font-black sm:block"
             >
-              Saved {saved.length}
+              SAVED {savedCount}
             </Link>
 
           </div>
@@ -163,75 +170,61 @@ export default function Home() {
       </nav>
 
       {/* HERO */}
-      <section className="mx-auto max-w-7xl px-6 py-10">
+      <section className="mx-auto max-w-7xl px-5 py-10 md:px-10 md:py-16">
 
-        <div className="grid overflow-hidden rounded-3xl bg-black lg:grid-cols-2">
+        <div className="grid items-center gap-10 overflow-hidden rounded-[2rem] border border-zinc-800 bg-zinc-950 p-6 md:p-10 lg:grid-cols-2">
 
-          <div className="flex flex-col justify-center px-8 py-14 text-white md:px-12 lg:px-16">
+          {/* HERO TEXT */}
+          <div>
 
-            <p className="mb-5 text-sm font-bold tracking-[3px] text-lime-400">
+            <p className="text-sm font-black tracking-[0.3em] text-[#ccff00]">
               WORKOUT LIBRARY
             </p>
 
-            <h1 className="text-5xl font-black leading-[0.95] md:text-6xl lg:text-7xl">
+            <h1 className="mt-5 text-5xl font-black uppercase leading-[0.95] tracking-tight md:text-7xl">
               TRAIN WITH
               <br />
               INTENT.
               <br />
-              LOG EVERY SET.
+              <span className="text-[#ccff00]">
+                LOG EVERY SET.
+              </span>
             </h1>
 
-            <p className="mt-6 max-w-lg text-base leading-7 text-gray-400">
-              Build your training routine with focused workouts,
-              track every session, and stay consistent with FitLog.
+            <p className="mt-6 max-w-xl text-base leading-7 text-zinc-400 md:text-lg">
+              FitLog is a dark, no-nonsense gym companion:
+              pick a lift, lock it into today's plan, and watch
+              the week's work add up.
             </p>
 
-            <a
+            <Link
               href="#library"
-              className="mt-8 w-fit rounded-lg bg-lime-400 px-7 py-4 font-black text-black hover:bg-lime-300"
+              className="mt-8 inline-flex items-center gap-3 rounded-full bg-[#ccff00] px-7 py-4 font-black text-black transition hover:scale-105"
             >
               BROWSE WORKOUTS
-            </a>
+              <span className="text-xl">→</span>
+            </Link>
 
           </div>
 
-          <div className="relative min-h-[350px] lg:min-h-[520px]">
+          {/* HERO IMAGE */}
+          <div className="relative h-[320px] overflow-hidden rounded-3xl border border-zinc-800 md:h-[450px]">
 
             <Image
               src="/banner.png"
-              alt="Workout banner"
+              alt="FitLog workout"
               fill
               priority
+              sizes="(max-width: 1024px) 100vw, 50vw"
               className="object-cover"
             />
 
-            <div className="absolute bottom-6 left-6 right-6 flex justify-between">
+            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
 
-              <Link
-                href="/my-plan"
-                className="rounded-xl bg-white px-5 py-3"
-              >
-                <span className="block text-xs font-bold text-gray-400">
-                  PLAN
-                </span>
-                <span className="text-2xl font-black">
-                  {plan.length}
-                </span>
-              </Link>
-
-              <Link
-                href="/my-plan"
-                className="rounded-xl bg-lime-400 px-5 py-3"
-              >
-                <span className="block text-xs font-bold">
-                  SAVED
-                </span>
-                <span className="text-2xl font-black">
-                  {saved.length}
-                </span>
-              </Link>
-
+            <div className="absolute bottom-5 left-5 rounded-full bg-black/80 px-4 py-2 text-xs font-bold backdrop-blur">
+              TRAIN HARD • LOG HONEST
             </div>
+
           </div>
 
         </div>
@@ -240,153 +233,194 @@ export default function Home() {
       {/* LIBRARY */}
       <section
         id="library"
-        className="mx-auto max-w-7xl px-6 py-14"
+        className="mx-auto max-w-7xl px-5 pb-20 md:px-10"
       >
 
-        <div className="mb-10 flex flex-col justify-between gap-5 md:flex-row md:items-end">
+        {/* HEADER */}
+        <div className="mb-8 flex flex-col justify-between gap-5 md:flex-row md:items-end">
 
           <div>
-            <p className="mb-2 text-sm font-bold tracking-[3px] text-lime-600">
-              WORKOUT COLLECTION
+
+            <p className="text-sm font-black tracking-[0.3em] text-[#ccff00]">
+              THE LIBRARY
             </p>
 
-            <h2 className="text-4xl font-black md:text-5xl">
-              THE LIBRARY
+            <h2 className="mt-3 text-4xl font-black uppercase md:text-5xl">
+              PICK YOUR LIFT.
             </h2>
 
-            <p className="mt-3 text-gray-500">
+            <p className="mt-3 text-zinc-500">
               Twelve lifts covering every major muscle group.
             </p>
+
           </div>
 
-          <select
-            value={sortBy}
-            onChange={(e) => setSortBy(e.target.value)}
-            className="rounded-lg border border-gray-300 bg-white px-5 py-3 font-semibold"
-          >
-            <option value="duration">Duration</option>
-            <option value="calories">Calories</option>
-            <option value="rating">Rating</option>
-          </select>
+          {/* SORT */}
+          <div className="relative">
+
+            <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value)}
+              className="appearance-none rounded-full border border-zinc-700 bg-zinc-950 px-6 py-3 pr-12 text-sm font-bold text-white outline-none focus:border-[#ccff00]"
+            >
+              <option value="duration">
+                Sort by Duration
+              </option>
+
+              <option value="calories">
+                Sort by Calories
+              </option>
+
+              <option value="rating">
+                Sort by Rating
+              </option>
+            </select>
+
+            <span className="pointer-events-none absolute right-5 top-1/2 -translate-y-1/2 text-zinc-400">
+              ↓
+            </span>
+
+          </div>
 
         </div>
 
-        {loading ? (
-          <div className="flex min-h-[300px] items-center justify-center">
+        {/* LOADING */}
+        {loading && (
+          <div className="flex min-h-[400px] items-center justify-center">
+
             <div className="text-center">
-              <div className="mx-auto h-10 w-10 animate-spin rounded-full border-4 border-gray-200 border-t-lime-500" />
-              <p className="mt-4 font-semibold">
+
+              <div className="mx-auto h-12 w-12 animate-spin rounded-full border-4 border-zinc-800 border-t-[#ccff00]" />
+
+              <p className="mt-5 font-bold text-zinc-500">
                 Loading workouts...
               </p>
+
             </div>
+
           </div>
-        ) : (
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        )}
 
-            {sortedWorkouts.map((workout) => (
+        {/* EMPTY */}
+        {!loading && filteredWorkouts.length === 0 && (
+          <div className="rounded-3xl border border-zinc-800 bg-zinc-950 p-16 text-center">
 
-              <article
+            <h3 className="text-3xl font-black">
+              NO WORKOUTS FOUND
+            </h3>
+
+            <p className="mt-3 text-zinc-500">
+              Please try again later.
+            </p>
+
+          </div>
+        )}
+
+        {/* WORKOUT GRID */}
+        {!loading && filteredWorkouts.length > 0 && (
+          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+
+            {filteredWorkouts.map((workout) => (
+
+              <Link
                 key={workout.id}
-                className="overflow-hidden rounded-2xl border border-gray-200 bg-white transition hover:-translate-y-1 hover:shadow-xl"
+                href={`/workout/${workout.id}`}
+                className="group overflow-hidden rounded-3xl border border-zinc-800 bg-zinc-950 transition duration-300 hover:-translate-y-1 hover:border-[#ccff00]"
               >
 
-                <Link href={`/workout/${workout.id}`}>
+                {/* IMAGE */}
+                <div className="relative h-64 overflow-hidden">
 
-                  <div className="relative h-56 overflow-hidden bg-gray-100">
+                  <Image
+                    src={workout.image}
+                    alt={workout.name}
+                    fill
+                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                    className="object-cover transition duration-500 group-hover:scale-105"
+                  />
 
-                    <Image
-                      src={workout.image}
-                      alt={workout.name}
-                      fill
-                      unoptimized
-                      className="object-cover transition duration-300 hover:scale-105"
-                    />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent" />
 
-                    <span className="absolute right-3 top-3 rounded-full bg-white px-3 py-1 text-sm font-bold">
-                      ★ {workout.rating}
-                    </span>
-
+                  {/* DIFFICULTY */}
+                  <div className="absolute left-4 top-4 rounded-full bg-black/80 px-3 py-1 text-[10px] font-black uppercase backdrop-blur">
+                    {workout.difficulty}
                   </div>
 
-                </Link>
+                  {/* RATING */}
+                  <div className="absolute right-4 top-4 rounded-full bg-black/80 px-3 py-1 text-xs font-black backdrop-blur">
+                    <span className="text-[#ccff00]">
+                      ★
+                    </span>{" "}
+                    {workout.rating}
+                  </div>
 
+                </div>
+
+                {/* CONTENT */}
                 <div className="p-5">
 
-                  <div className="mb-3 flex flex-wrap gap-2">
+                  {/* TAGS */}
+                  <div className="mb-4 flex flex-wrap gap-2">
 
-                    {workout.muscleGroups.map((muscle) => (
-                      <span
-                        key={muscle}
-                        className="rounded-full bg-gray-100 px-3 py-1 text-xs font-bold"
-                      >
-                        {muscle}
-                      </span>
-                    ))}
+                    {workout.muscleGroups
+                      .slice(0, 3)
+                      .map((muscle) => (
+                        <span
+                          key={muscle}
+                          className="rounded-full bg-zinc-900 px-3 py-1 text-[10px] font-bold uppercase text-zinc-400"
+                        >
+                          {muscle}
+                        </span>
+                      ))}
 
                   </div>
 
-                  <Link href={`/workout/${workout.id}`}>
-                    <h3 className="text-xl font-black hover:text-lime-600">
-                      {workout.name}
-                    </h3>
-                  </Link>
+                  <h3 className="text-2xl font-black uppercase leading-tight">
+                    {workout.name}
+                  </h3>
 
-                  <p className="mt-2 text-sm text-gray-500">
+                  <p className="mt-2 text-sm text-zinc-500">
                     {workout.equipment}
                   </p>
 
-                  <div className="mt-5 grid grid-cols-3 border-t pt-4 text-center">
+                  {/* STATS */}
+                  <div className="mt-5 flex items-center justify-between border-t border-zinc-800 pt-4">
 
                     <div>
-                      <p className="text-xs text-gray-400">
-                        DURATION
+                      <p className="text-[10px] font-bold uppercase text-zinc-600">
+                        Duration
                       </p>
-                      <p className="font-bold">
-                        {workout.duration}m
+
+                      <p className="mt-1 font-bold">
+                        {workout.duration} min
                       </p>
                     </div>
 
                     <div>
-                      <p className="text-xs text-gray-400">
-                        CALORIES
+                      <p className="text-[10px] font-bold uppercase text-zinc-600">
+                        Calories
                       </p>
-                      <p className="font-bold">
-                        {workout.caloriesBurned}
-                      </p>
-                    </div>
 
-                    <div>
-                      <p className="text-xs text-gray-400">
-                        RATING
-                      </p>
-                      <p className="font-bold">
-                        {workout.rating}
+                      <p className="mt-1 font-bold">
+                        {workout.caloriesBurned} kcal
                       </p>
                     </div>
 
-                  </div>
+                    <div className="text-right">
+                      <p className="text-[10px] font-bold uppercase text-zinc-600">
+                        Rating
+                      </p>
 
-                  <div className="mt-5 flex gap-2">
-
-                    <button
-                      onClick={() => addToPlan(workout.id)}
-                      className="flex-1 rounded-lg bg-lime-400 py-3 text-sm font-black hover:bg-lime-300"
-                    >
-                      ADD TO PLAN
-                    </button>
-
-                    <button
-                      onClick={() => saveWorkout(workout.id)}
-                      className="rounded-lg border border-black px-4 text-xl hover:bg-black hover:text-white"
-                    >
-                      ♡
-                    </button>
+                      <p className="mt-1 font-bold text-[#ccff00]">
+                        ★ {workout.rating}
+                      </p>
+                    </div>
 
                   </div>
 
                 </div>
 
-              </article>
+              </Link>
 
             ))}
 
@@ -396,29 +430,38 @@ export default function Home() {
       </section>
 
       {/* FOOTER */}
-      <footer className="bg-black px-6 py-10 text-white">
+      <footer className="border-t border-zinc-800 bg-zinc-950">
 
-        <div className="mx-auto flex max-w-7xl flex-col justify-between gap-5 md:flex-row">
+        <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-5 px-5 py-8 md:flex-row md:px-10">
 
-          <div>
-            <h3 className="text-2xl font-black">
-              FITLOG
-            </h3>
+          <Link
+            href="/"
+            className="flex items-center gap-3"
+          >
 
-            <p className="mt-2 text-sm text-gray-500">
-              Train with intent. Log every set.
-            </p>
-          </div>
+            <Image
+              src="/logho.png"
+              alt="FitLog"
+              width={34}
+              height={34}
+            />
 
-          <p className="text-sm text-gray-500">
-            © 2026 FitLog. All rights reserved.
+            <span className="font-black tracking-wider">
+              FIT<span className="text-[#ccff00]">
+                LOG
+              </span>
+            </span>
+
+          </Link>
+
+          <p className="text-center text-sm text-zinc-600">
+            © 2026 FitLog — Workout Library. Train hard,
+            log honest.
           </p>
 
         </div>
 
       </footer>
-
-      <ToastContainer position="top-right" autoClose={2000} />
 
     </main>
   );

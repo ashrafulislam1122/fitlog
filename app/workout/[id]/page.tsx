@@ -1,13 +1,17 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
+import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 type Workout = {
   id: number;
   name: string;
   image: string;
-  muscleGroups: string[];
+  muscleGroups?: string[];
   equipment: string;
   difficulty: string;
   duration: number;
@@ -16,568 +20,492 @@ type Workout = {
   reps: string;
   rating: number;
   description: string;
-  instructions: string[];
+  instructions?: string[];
 };
 
-const workoutData: Workout[] = [
-  {
-    id: 1,
-    name: "Barbell Bench Press",
-    image:
-      "https://img.magnific.com/free-photo/portrait-anime-character-doing-fitness-exercising_23-2151666664.jpg?w=740",
-    muscleGroups: ["Chest", "Arms"],
-    equipment: "Barbell, Bench",
-    difficulty: "Intermediate",
-    duration: 25,
-    caloriesBurned: 180,
-    sets: 4,
-    reps: "6-8",
-    rating: 4.8,
-    description:
-      "A classic upper-body pressing exercise targeting the chest and arms.",
-    instructions: [
-      "Lie flat on the bench and grip the bar slightly wider than shoulder width.",
-      "Lower the bar toward your chest with control.",
-      "Press the bar upward until your arms are extended.",
-      "Repeat for the required reps.",
-    ],
-  },
-  {
-    id: 2,
-    name: "Pull-Up",
-    image:
-      "https://img.magnific.com/free-photo/3d-cartoon-fitness-man_23-2151691400.jpg?w=740",
-    muscleGroups: ["Back", "Arms"],
-    equipment: "Pull-up Bar",
-    difficulty: "Intermediate",
-    duration: 15,
-    caloriesBurned: 120,
-    sets: 4,
-    reps: "6-10",
-    rating: 4.7,
-    description:
-      "A bodyweight pulling exercise that targets the back and arms.",
-    instructions: [
-      "Grip the pull-up bar with your hands slightly wider than your shoulders.",
-      "Pull your body upward toward the bar.",
-      "Keep your body controlled throughout the movement.",
-      "Lower yourself slowly and repeat.",
-    ],
-  },
-  {
-    id: 3,
-    name: "Back Squat",
-    image:
-      "https://img.magnific.com/free-photo/3d-cartoon-fitness-man_23-2151691401.jpg?w=740",
-    muscleGroups: ["Legs", "Core"],
-    equipment: "Barbell, Rack",
-    difficulty: "Advanced",
-    duration: 30,
-    caloriesBurned: 240,
-    sets: 5,
-    reps: "5-8",
-    rating: 4.9,
-    description:
-      "A compound lower-body exercise focusing on the legs and core.",
-    instructions: [
-      "Position the barbell securely across your upper back.",
-      "Stand with your feet around shoulder width apart.",
-      "Lower your body by bending your knees and hips.",
-      "Drive through your feet to return to the starting position.",
-    ],
-  },
-  {
-    id: 4,
-    name: "Overhead Press",
-    image:
-      "https://img.magnific.com/free-photo/portrait-anime-character-doing-fitness-exercising_23-2151666703.jpg?w=740",
-    muscleGroups: ["Shoulders", "Arms"],
-    equipment: "Barbell",
-    difficulty: "Intermediate",
-    duration: 20,
-    caloriesBurned: 150,
-    sets: 4,
-    reps: "6-8",
-    rating: 4.6,
-    description:
-      "A pressing movement that develops the shoulders and arms.",
-    instructions: [
-      "Hold the barbell at shoulder level.",
-      "Brace your core and keep your body stable.",
-      "Press the barbell overhead.",
-      "Lower it back to shoulder level with control.",
-    ],
-  },
-  {
-    id: 5,
-    name: "Dumbbell Bicep Curl",
-    image:
-      "https://img.magnific.com/free-photo/portrait-anime-character-doing-fitness-exercising_23-2151666702.jpg?w=740",
-    muscleGroups: ["Arms"],
-    equipment: "Dumbbells",
-    difficulty: "Beginner",
-    duration: 12,
-    caloriesBurned: 80,
-    sets: 3,
-    reps: "10-12",
-    rating: 4.3,
-    description:
-      "A simple isolation exercise for the biceps.",
-    instructions: [
-      "Hold a dumbbell in each hand.",
-      "Keep your elbows close to your body.",
-      "Curl the dumbbells upward.",
-      "Lower them slowly to the starting position.",
-    ],
-  },
-  {
-    id: 6,
-    name: "Hollow-Body Plank",
-    image:
-      "https://img.magnific.com/free-photo/3d-cartoon-fitness-man_23-2151691489.jpg?w=740",
-    muscleGroups: ["Core"],
-    equipment: "Bodyweight",
-    difficulty: "Beginner",
-    duration: 10,
-    caloriesBurned: 60,
-    sets: 3,
-    reps: "30-45s",
-    rating: 4.4,
-    description:
-      "A core-focused bodyweight exercise.",
-    instructions: [
-      "Lie on your back and engage your core.",
-      "Lift your shoulders and legs slightly from the floor.",
-      "Keep your lower back controlled.",
-      "Hold the position for the required time.",
-    ],
-  },
-  {
-    id: 7,
-    name: "Burpee",
-    image:
-      "https://img.magnific.com/free-photo/3d-cartoon-business-character_1048-16544.jpg?w=740",
-    muscleGroups: ["Full Body"],
-    equipment: "Bodyweight",
-    difficulty: "Intermediate",
-    duration: 12,
-    caloriesBurned: 160,
-    sets: 4,
-    reps: "8-12",
-    rating: 4.2,
-    description:
-      "A full-body conditioning exercise combining strength and cardio.",
-    instructions: [
-      "Start standing with your feet shoulder width apart.",
-      "Squat down and place your hands on the floor.",
-      "Move your feet back into a plank position.",
-      "Return to standing and repeat.",
-    ],
-  },
-  {
-    id: 8,
-    name: "Conventional Deadlift",
-    image:
-      "https://img.magnific.com/free-photo/portrait-anime-character-doing-fitness-exercising_23-2151666704.jpg?w=740",
-    muscleGroups: ["Back", "Legs"],
-    equipment: "Barbell",
-    difficulty: "Advanced",
-    duration: 28,
-    caloriesBurned: 260,
-    sets: 4,
-    reps: "3-5",
-    rating: 4.9,
-    description:
-      "A compound lift targeting the posterior chain.",
-    instructions: [
-      "Stand with the barbell over your mid-foot.",
-      "Bend your hips and knees while keeping your back controlled.",
-      "Lift the bar by driving through your feet.",
-      "Lower the bar with control.",
-    ],
-  },
-  {
-    id: 9,
-    name: "Push-Up",
-    image:
-      "https://img.magnific.com/free-photo/3d-cartoon-fitness-man_23-2151691429.jpg?w=740",
-    muscleGroups: ["Chest", "Arms", "Core"],
-    equipment: "Bodyweight",
-    difficulty: "Beginner",
-    duration: 10,
-    caloriesBurned: 90,
-    sets: 3,
-    reps: "12-15",
-    rating: 4.5,
-    description:
-      "A classic bodyweight exercise for the chest, arms, and core.",
-    instructions: [
-      "Start in a high plank position.",
-      "Keep your body straight.",
-      "Lower your chest toward the floor.",
-      "Push yourself back up.",
-    ],
-  },
-  {
-    id: 10,
-    name: "Walking Lunge",
-    image:
-      "https://img.magnific.com/free-photo/portrait-anime-character-doing-fitness-exercising_23-2151666701.jpg?w=740",
-    muscleGroups: ["Legs"],
-    equipment: "Dumbbells (optional)",
-    difficulty: "Beginner",
-    duration: 18,
-    caloriesBurned: 170,
-    sets: 3,
-    reps: "10-12/leg",
-    rating: 4.4,
-    description:
-      "A lower-body movement that works the legs and improves balance.",
-    instructions: [
-      "Stand tall with your feet together.",
-      "Step forward with one leg.",
-      "Lower your body into a lunge.",
-      "Push through the front foot and step forward with the other leg.",
-    ],
-  },
-  {
-    id: 11,
-    name: "Russian Twist",
-    image:
-      "https://img.magnific.com/free-photo/3d-cartoon-fitness-man_23-2151691487.jpg?w=740",
-    muscleGroups: ["Core"],
-    equipment: "Medicine Ball",
-    difficulty: "Beginner",
-    duration: 8,
-    caloriesBurned: 70,
-    sets: 3,
-    reps: "16-20",
-    rating: 4.1,
-    description:
-      "A rotational core exercise.",
-    instructions: [
-      "Sit with your knees bent and feet supported.",
-      "Lean your upper body back slightly.",
-      "Hold the medicine ball in front of you.",
-      "Rotate your torso from side to side.",
-    ],
-  },
-  {
-    id: 12,
-    name: "Kettlebell Swing",
-    image:
-      "https://img.magnific.com/free-photo/3d-cartoon-fitness-man_23-2151691505.jpg?w=740",
-    muscleGroups: ["Full Body", "Shoulders"],
-    equipment: "Kettlebell",
-    difficulty: "Intermediate",
-    duration: 16,
-    caloriesBurned: 200,
-    sets: 5,
-    reps: "12-15",
-    rating: 4.7,
-    description:
-      "A dynamic full-body exercise using a kettlebell.",
-    instructions: [
-      "Stand with the kettlebell between your feet.",
-      "Hinge at your hips and grip the kettlebell.",
-      "Drive your hips forward to swing the kettlebell.",
-      "Control the kettlebell as it returns between your legs.",
-    ],
-  },
-];
+export default function WorkoutDetails() {
+  const params = useParams();
+  const id = params.id as string;
 
-export default function WorkoutDetails({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
   const [workout, setWorkout] = useState<Workout | null>(null);
   const [loading, setLoading] = useState(true);
-  const [message, setMessage] = useState("");
+  const [planAdded, setPlanAdded] = useState(false);
+  const [saved, setSaved] = useState(false);
 
   useEffect(() => {
-    const loadWorkout = async () => {
+    async function loadWorkout() {
       try {
-        const { id } = await params;
-
-        const foundWorkout = workoutData.find(
-          (item) => item.id === Number(id)
+        const response = await fetch(
+          `https://api.api-store.workers.dev/api/fitlog/${id}`
         );
 
-        if (!foundWorkout) {
+        if (!response.ok) {
           throw new Error("Workout not found");
         }
 
-        setWorkout(foundWorkout);
+        const data = await response.json();
+
+        setWorkout(data);
+
+        const plan = JSON.parse(
+          localStorage.getItem("fitlog-plan") || "[]"
+        );
+
+        const savedItems = JSON.parse(
+          localStorage.getItem("fitlog-saved") || "[]"
+        );
+
+        setPlanAdded(
+          plan.some((item: any) => {
+            const itemId =
+              typeof item === "number" ? item : item.id;
+
+            return itemId === data.id;
+          })
+        );
+
+        setSaved(
+          savedItems.some((item: any) => {
+            const itemId =
+              typeof item === "number" ? item : item.id;
+
+            return itemId === data.id;
+          })
+        );
       } catch (error) {
         console.error(error);
+        setWorkout(null);
       } finally {
         setLoading(false);
       }
-    };
+    }
 
-    loadWorkout();
-  }, [params]);
+    if (id) {
+      loadWorkout();
+    }
+  }, [id]);
 
-  const addToPlan = () => {
+  function addToPlan() {
     if (!workout) return;
 
-    const currentPlan: number[] = JSON.parse(
+    const oldPlan = JSON.parse(
       localStorage.getItem("fitlog-plan") || "[]"
     );
 
-    if (currentPlan.includes(workout.id)) {
-      setMessage("Already added to today's plan!");
+    const plan = oldPlan
+      .map((item: any) => {
+        if (typeof item === "number") {
+          return null;
+        }
+
+        return item;
+      })
+      .filter(Boolean);
+
+    if (
+      plan.some(
+        (item: Workout) => item.id === workout.id
+      )
+    ) {
+      toast.info("Already added to today's plan!");
+      setPlanAdded(true);
       return;
     }
 
-    const updatedPlan = [...currentPlan, workout.id];
+    if (plan.length >= 5) {
+      toast.warning(
+        "Today's plan can contain maximum 5 workouts."
+      );
+      return;
+    }
 
-    localStorage.setItem("fitlog-plan", JSON.stringify(updatedPlan));
-    setMessage("Added to today's plan!");
-  };
+    const updatedPlan = [...plan, workout];
 
-  const saveForLater = () => {
+    localStorage.setItem(
+      "fitlog-plan",
+      JSON.stringify(updatedPlan)
+    );
+
+    setPlanAdded(true);
+
+    window.dispatchEvent(new Event("storage"));
+
+    toast.success("Added to today's plan!");
+  }
+
+  function saveForLater() {
     if (!workout) return;
 
-    const currentSaved: number[] = JSON.parse(
+    const oldSaved = JSON.parse(
       localStorage.getItem("fitlog-saved") || "[]"
     );
 
-    if (currentSaved.includes(workout.id)) {
-      setMessage("Already saved!");
+    const savedItems = oldSaved
+      .map((item: any) => {
+        if (typeof item === "number") {
+          return null;
+        }
+
+        return item;
+      })
+      .filter(Boolean);
+
+    if (
+      savedItems.some(
+        (item: Workout) => item.id === workout.id
+      )
+    ) {
+      toast.info("Already saved for later!");
+      setSaved(true);
       return;
     }
 
-    const updatedSaved = [...currentSaved, workout.id];
+    const updatedSaved = [...savedItems, workout];
 
-    localStorage.setItem("fitlog-saved", JSON.stringify(updatedSaved));
-    setMessage("Saved for later!");
-  };
+    localStorage.setItem(
+      "fitlog-saved",
+      JSON.stringify(updatedSaved)
+    );
+
+    setSaved(true);
+
+    window.dispatchEvent(new Event("storage"));
+
+    toast.success("Saved for later!");
+  }
 
   if (loading) {
     return (
-      <main className="flex min-h-screen items-center justify-center">
-        <p className="font-semibold text-black/50">
-          Loading workout…
-        </p>
+      <main className="flex min-h-screen items-center justify-center bg-black text-white">
+        <div className="text-center">
+          <div className="mx-auto h-12 w-12 animate-spin rounded-full border-4 border-zinc-800 border-t-[#ccff00]" />
+
+          <p className="mt-5 font-bold text-zinc-500">
+            Loading workout...
+          </p>
+        </div>
       </main>
     );
   }
 
   if (!workout) {
     return (
-      <main className="flex min-h-screen flex-col items-center justify-center px-6 text-center">
-        <h1 className="text-4xl font-black">Workout not found</h1>
+      <main className="flex min-h-screen flex-col items-center justify-center bg-black px-6 text-center text-white">
+        <p className="text-[#ccff00]">404</p>
+
+        <h1 className="mt-3 text-4xl font-black">
+          WORKOUT NOT FOUND
+        </h1>
 
         <Link
           href="/"
-          className="mt-6 rounded-full bg-black px-6 py-3 font-bold text-white"
+          className="mt-7 rounded-full bg-[#ccff00] px-7 py-3 font-black text-black"
         >
-          Back to workouts
+          BACK TO WORKOUTS
         </Link>
       </main>
     );
   }
 
-  return (
-    <main className="min-h-screen bg-white text-black">
-      {/* Navbar */}
-      <nav className="flex flex-col gap-5 border-b border-black/10 px-6 py-5 md:flex-row md:items-center md:justify-between md:px-12">
-        <Link href="/" className="text-2xl font-black">
-          FITLOG
-        </Link>
+  const muscles = workout.muscleGroups || [];
 
-        <div className="flex items-center gap-3">
+  const instructions = workout.instructions || [];
+
+  return (
+    <main className="min-h-screen bg-black text-white">
+
+      <ToastContainer
+        position="top-right"
+        autoClose={2500}
+        theme="dark"
+      />
+
+      {/* NAVBAR */}
+      <nav className="border-b border-zinc-800 bg-black">
+        <div className="mx-auto flex max-w-7xl items-center justify-between px-5 py-4 md:px-10">
+
           <Link
             href="/"
-            className="rounded-full px-4 py-2 text-sm font-semibold text-black/60 hover:bg-black/5"
+            className="flex items-center gap-3"
           >
-            Workout
+            <Image
+              src="/logo.png"
+              alt="FitLog"
+              width={42}
+              height={42}
+            />
+
+            <span className="text-2xl font-black">
+              FIT<span className="text-[#ccff00]">
+                LOG
+              </span>
+            </span>
           </Link>
 
-          <Link
-            href="/my-plan"
-            className="rounded-full bg-black px-4 py-2 text-sm font-semibold text-white"
-          >
-            My Plan
-          </Link>
-        </div>
+          <div className="hidden items-center gap-8 md:flex">
 
-        <div className="flex gap-2">
-          <span className="rounded-full bg-black px-4 py-2 text-sm font-semibold text-white">
-            Plan
-          </span>
+            <Link
+              href="/"
+              className="text-sm font-bold text-zinc-400 hover:text-white"
+            >
+              WORKOUT
+            </Link>
 
-          <span className="rounded-full border border-black px-4 py-2 text-sm font-semibold">
-            Saved
-          </span>
+            <Link
+              href="/my-plan"
+              className="text-sm font-bold text-[#ccff00]"
+            >
+              MY PLAN
+            </Link>
+
+          </div>
+
+          <div className="flex gap-2">
+
+            <Link
+              href="/my-plan"
+              className="rounded-full bg-[#ccff00] px-4 py-2 text-xs font-black text-black"
+            >
+              PLAN
+            </Link>
+
+            <Link
+              href="/my-plan"
+              className="hidden rounded-full border border-zinc-700 px-4 py-2 text-xs font-black sm:block"
+            >
+              SAVED
+            </Link>
+
+          </div>
+
         </div>
       </nav>
 
-      {/* Workout Details */}
-      <section className="mx-auto max-w-7xl px-6 py-12 md:px-12 md:py-20">
-        <div className="grid gap-10 md:grid-cols-2 md:items-start">
-          {/* Image */}
-          <div className="overflow-hidden rounded-3xl bg-black/5">
-            <img
+      {/* DETAILS */}
+      <section className="mx-auto max-w-7xl px-5 py-10 md:px-10 md:py-16">
+
+        <div className="grid gap-10 lg:grid-cols-2">
+
+          {/* IMAGE */}
+          <div className="relative min-h-[420px] overflow-hidden rounded-[2rem] border border-zinc-800 bg-zinc-950 lg:min-h-[620px]">
+
+            <Image
               src={workout.image}
               alt={workout.name}
-              className="h-[400px] w-full object-cover md:h-[600px]"
+              fill
+              priority
+              sizes="(max-width: 1024px) 100vw, 50vw"
+              className="object-cover"
             />
+
           </div>
 
-          {/* Information */}
-          <div>
-            <p className="text-sm font-bold tracking-[0.2em] text-black/40">
+          {/* CONTENT */}
+          <div className="flex flex-col justify-center">
+
+            <p className="text-sm font-black tracking-[0.3em] text-[#ccff00]">
               WORKOUT DETAILS
             </p>
 
-            <h1 className="mt-4 text-4xl font-black tracking-tight md:text-6xl">
+            <h1 className="mt-4 text-4xl font-black uppercase leading-tight md:text-6xl">
               {workout.name}
             </h1>
 
-            <p className="mt-6 leading-7 text-black/60">
+            <p className="mt-6 leading-8 text-zinc-400">
               {workout.description}
             </p>
 
-            {/* Muscle Groups */}
+            {/* TAGS */}
             <div className="mt-6 flex flex-wrap gap-2">
-              {workout.muscleGroups.map((muscle) => (
+
+              {muscles.map((muscle) => (
                 <span
                   key={muscle}
-                  className="rounded-full border border-black/20 px-4 py-2 text-sm font-semibold"
+                  className="rounded-full bg-[#ccff00] px-4 py-2 text-xs font-black uppercase text-black"
                 >
                   {muscle}
                 </span>
               ))}
+
             </div>
 
-            {/* Specs */}
-            <div className="mt-8 grid grid-cols-2 gap-4">
-              <div className="rounded-2xl border border-black/10 p-5">
-                <p className="text-xs font-bold text-black/40">
+            {/* SPECS */}
+            <div className="mt-8 grid grid-cols-2 gap-px overflow-hidden rounded-2xl border border-zinc-800 bg-zinc-800">
+
+              <div className="bg-zinc-950 p-5">
+                <p className="text-xs text-zinc-600">
                   EQUIPMENT
                 </p>
-                <p className="mt-2 font-bold">{workout.equipment}</p>
+                <p className="mt-2 font-bold">
+                  {workout.equipment}
+                </p>
               </div>
 
-              <div className="rounded-2xl border border-black/10 p-5">
-                <p className="text-xs font-bold text-black/40">
+              <div className="bg-zinc-950 p-5">
+                <p className="text-xs text-zinc-600">
                   DIFFICULTY
                 </p>
-                <p className="mt-2 font-bold">{workout.difficulty}</p>
+                <p className="mt-2 font-bold">
+                  {workout.difficulty}
+                </p>
               </div>
 
-              <div className="rounded-2xl border border-black/10 p-5">
-                <p className="text-xs font-bold text-black/40">
+              <div className="bg-zinc-950 p-5">
+                <p className="text-xs text-zinc-600">
                   SETS
                 </p>
-                <p className="mt-2 font-bold">{workout.sets}</p>
+                <p className="mt-2 font-bold">
+                  {workout.sets}
+                </p>
               </div>
 
-              <div className="rounded-2xl border border-black/10 p-5">
-                <p className="text-xs font-bold text-black/40">
+              <div className="bg-zinc-950 p-5">
+                <p className="text-xs text-zinc-600">
                   REPS
                 </p>
-                <p className="mt-2 font-bold">{workout.reps}</p>
+                <p className="mt-2 font-bold">
+                  {workout.reps}
+                </p>
               </div>
 
-              <div className="rounded-2xl border border-black/10 p-5">
-                <p className="text-xs font-bold text-black/40">
+              <div className="bg-zinc-950 p-5">
+                <p className="text-xs text-zinc-600">
                   DURATION
                 </p>
-                <p className="mt-2 font-bold">{workout.duration} min</p>
+                <p className="mt-2 font-bold">
+                  {workout.duration} min
+                </p>
               </div>
 
-              <div className="rounded-2xl border border-black/10 p-5">
-                <p className="text-xs font-bold text-black/40">
+              <div className="bg-zinc-950 p-5">
+                <p className="text-xs text-zinc-600">
                   CALORIES
                 </p>
                 <p className="mt-2 font-bold">
                   {workout.caloriesBurned} kcal
                 </p>
               </div>
+
+              <div className="col-span-2 bg-zinc-950 p-5">
+                <p className="text-xs text-zinc-600">
+                  RATING
+                </p>
+
+                <p className="mt-2 font-bold">
+                  <span className="text-[#ccff00]">
+                    ★
+                  </span>{" "}
+                  {workout.rating} / 5
+                </p>
+              </div>
+
             </div>
 
-            {/* Rating */}
-            <div className="mt-6 text-lg font-bold">
-              ★ {workout.rating}
-            </div>
+            {/* BUTTONS */}
+            <div className="mt-8 grid gap-3 sm:grid-cols-2">
 
-            {/* Buttons */}
-            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
               <button
+                type="button"
                 onClick={addToPlan}
-                className="rounded-full bg-black px-7 py-4 font-bold text-white transition hover:bg-black/80"
+                className={`rounded-full px-6 py-4 font-black ${
+                  planAdded
+                    ? "bg-zinc-800 text-zinc-500"
+                    : "bg-[#ccff00] text-black hover:scale-[1.02]"
+                }`}
               >
-                Add to today&apos;s plan
+                {planAdded
+                  ? "✓ ADDED TO TODAY'S PLAN"
+                  : "+ ADD TO TODAY'S PLAN"}
               </button>
 
               <button
+                type="button"
                 onClick={saveForLater}
-                className="rounded-full border border-black px-7 py-4 font-bold transition hover:bg-black hover:text-white"
+                className={`rounded-full border px-6 py-4 font-black ${
+                  saved
+                    ? "border-zinc-800 text-zinc-500"
+                    : "border-zinc-700 hover:border-[#ccff00] hover:text-[#ccff00]"
+                }`}
               >
-                Save for later
+                {saved
+                  ? "✓ SAVED FOR LATER"
+                  : "♡ SAVE FOR LATER"}
               </button>
+
             </div>
 
-            {/* Message */}
-            {message && (
-              <p className="mt-4 rounded-xl bg-black/5 px-4 py-3 text-sm font-semibold">
-                {message}
-              </p>
-            )}
           </div>
         </div>
 
-        {/* Instructions */}
+        {/* INSTRUCTIONS */}
         <div className="mt-20">
-          <p className="text-sm font-bold tracking-[0.2em] text-black/40">
+
+          <p className="text-sm font-black tracking-[0.3em] text-[#ccff00]">
             HOW TO DO IT
           </p>
 
-          <h2 className="mt-3 text-3xl font-black md:text-4xl">
-            Instructions
+          <h2 className="mt-3 text-4xl font-black">
+            INSTRUCTIONS
           </h2>
 
           <div className="mt-8 grid gap-4 md:grid-cols-2">
-            {workout.instructions.map((instruction, index) => (
-              <div
-                key={index}
-                className="rounded-2xl border border-black/10 p-6"
-              >
-                <div className="flex gap-4">
-                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-black text-sm font-bold text-white">
-                    {index + 1}
-                  </span>
 
-                  <p className="leading-7 text-black/70">
+            {instructions.map(
+              (instruction, index) => (
+                <div
+                  key={index}
+                  className="rounded-2xl border border-zinc-800 bg-zinc-950 p-6"
+                >
+
+                  <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-full bg-[#ccff00] font-black text-black">
+                    {index + 1}
+                  </div>
+
+                  <p className="leading-7 text-zinc-400">
                     {instruction}
                   </p>
+
                 </div>
-              </div>
-            ))}
+              )
+            )}
+
           </div>
+
         </div>
+
       </section>
 
-      {/* Footer */}
-      <footer className="bg-black px-6 py-12 text-white md:px-12">
-        <div className="mx-auto flex max-w-7xl flex-col gap-3 md:flex-row md:items-center md:justify-between">
-          <div>
-            <p className="text-2xl font-black">FITLOG</p>
+      {/* FOOTER */}
+      <footer className="border-t border-zinc-800 bg-zinc-950">
 
-            <p className="mt-1 text-sm text-white/50">
-              Train with intent. Log every set.
-            </p>
+        <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-5 px-5 py-8 md:flex-row md:px-10">
+
+          <div className="flex items-center gap-3">
+
+            <Image
+              src="/logo.png"
+              alt="FitLog"
+              width={34}
+              height={34}
+            />
+
+            <span className="font-black tracking-wider">
+              FIT<span className="text-[#ccff00]">
+                LOG
+              </span>
+            </span>
+
           </div>
 
-          <p className="text-sm text-white/40">
-            © 2026 FITLOG. All rights reserved.
+          <p className="text-center text-sm text-zinc-600">
+            © 2026 FitLog — Workout Library. Train hard, log
+            honest.
           </p>
+
         </div>
+
       </footer>
+
     </main>
   );
 }
