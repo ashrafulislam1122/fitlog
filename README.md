@@ -37,3 +37,6 @@ Install dependencies:
 
 ```bash
 npm install
+## Responsive Design
+
+FitLog is designed to work smoothly across mobile, tablet, and desktop screen sizes.
